@@ -3,7 +3,7 @@ require 'spec_helper'
 describe "RSolr::Connection" do
 
   before do
-    @solr = "http://localhost:8983/solr"
+    @solr = "http://solr.dev:8983/solr"
     @conn = RSolr::Connection.new
   end
 
@@ -64,4 +64,27 @@ describe "RSolr::Connection" do
     end
   end
   
+  
+  describe "On a local Solr instance" do
+    before do
+      @solr = "http://localhost:8983/solr"
+    end
+    
+    it "discards http_proxy environment if set" do
+      with_proxy_env "http://duncan.proxy.com:80" do
+        req = @conn.send :http, URI::parse(@solr)
+        req.proxyaddr.should == nil
+        req.proxyport.should == nil 
+      end
+    end
+    
+    it "discards a proxy string passed through" do
+      with_proxy_env nil do
+        proxy = "http://www.duncanproxy.com"
+        req = @conn.send :http, URI::parse(@solr), proxy
+        req.proxyaddr.should == nil
+        req.proxyport.should == nil
+      end
+    end
+  end
 end
