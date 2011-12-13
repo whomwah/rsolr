@@ -31,12 +31,14 @@ class RSolr::Connection
 
   def http uri, proxy = nil
     @http ||= (
-      if proxy
+      if %w{127.0.0.1 localhost 0.0.0.0}.include?(uri.host)
+        proxy = OpenStruct.new
+      elsif proxy
         proxy = URI.parse(proxy)
       else
         proxy = ENV['http_proxy'] ? URI.parse(ENV['http_proxy']) : OpenStruct.new
       end
-
+      
       proxy_user, proxy_pass = proxy.userinfo.split(/:/) if proxy.userinfo
       http = Net::HTTP::Proxy( proxy.host, proxy.port, proxy_user, proxy_pass ).new( uri.host, uri.port )
 
